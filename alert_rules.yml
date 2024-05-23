@@ -1,11 +1,11 @@
 groups:
   - name: go-service-alerts
     rules:
-      - alert: GoServiceDown
-        expr: up{job="go-service"} == 0
-        for: 30s
+      - alert: ScannerFailures
+    expr: scanner_failures_total > 0
+        for: 1m
         labels:
           severity: critical
         annotations:
-          summary: "Go Service Down"
-          description: "The Go service on {{ $labels.instance }} is down."
+          summary: "Scanner Failure Detected"
+          description: "The scanner has failed {{ $value }} times in the last minute."

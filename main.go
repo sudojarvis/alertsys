@@ -79,6 +79,8 @@ var (
 
 // init function to register metrics
 func init() {
+	prometheus.MustRegister(httpRequestsTotal)
+    prometheus.MustRegister(httpDuration)
     prometheus.MustRegister(scanFailures) // Register the scanner failures metric explicitly
 }
 
