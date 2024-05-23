@@ -1,0 +1,11 @@
+[Unit]
+Description=Go Scanner Service
+After=network.target
+
+[Service]
+ExecStart=main.go
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
