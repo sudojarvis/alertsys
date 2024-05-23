@@ -1,0 +1,69 @@
+version: '3.8'
+
+networks:
+  prometheus:
+    driver: bridge
+
+services:
+  prometheus:
+    image: prom/prometheus
+    container_name: prometheus
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./alert_rules.yml:/etc/prometheus/alert_rules.yml
+    ports:
+      - '9090:9090'
+    networks:
+      - prometheus
+    command:
+      - '--config.file=/etc/prometheus/prometheus.yml'
+  grafana:
+    image: grafana/grafana
+    container_name: grafana
+    ports:
+      - '3000:3000'
+    networks:
+      - prometheus
+    environment:
+      - GF_SECURITY_ADMIN_USER=admin
+      - GF_SECURITY_ADMIN_PASSWORD=admin
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:3000/api/health || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+    volumes:
+      - grafana-storage:/var/lib/grafana
+
+  alertmanager:
+    image: prom/alertmanager
+    container_name: alertmanager
+    volumes:
+      - ./alertmanager.yml:/etc/alertmanager/alertmanager.yml
+    ports:
+      - '9093:9093'
+    networks:
+      - prometheus
+    command:
+      - '--config.file=/etc/alertmanager/alertmanager.yml'
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:9093/-/healthy || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  go-webserver:
+    build: .
+    container_name: go-webserver
+    ports:
+      - '8080:8080'
+    networks:
+      - prometheus
+    healthcheck:
+      test: ["CMD-SHELL", "wget --spider --quiet http://localhost:8080/metrics || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+volumes:
+  grafana-storage:

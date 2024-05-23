@@ -1,0 +1,11 @@
+groups:
+  - name: go-service-alerts
+    rules:
+      - alert: GoServiceDown
+        expr: up{job="go-service"} == 0
+        for: 30s
+        labels:
+          severity: critical
+        annotations:
+          summary: "Go Service Down"
+          description: "The Go service on {{ $labels.instance }} is down."
